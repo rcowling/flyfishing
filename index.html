@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Display a map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.6.1/mapbox-gl.css" rel="stylesheet" />
+<style>
+	body { margin: 0; padding: 0; }
+	#map { position: absolute; top: 0; bottom: 0; width: 100%; };
+</style>
+</head>
+<body>
+<div id="map"></div>
+<script>
+	mapboxgl.accessToken = 'pk.eyJ1IjoiYW5kcmV3Ym9lZGRla2VyIiwiYSI6ImNrNWZpeXY4czB6bW4zZG1oNHhlZDgxeGoifQ.7GRVq5ockbLpM8Q-a83u7A';
+    var map = new mapboxgl.Map({
+        container: 'map', // container id
+        style: 'mapbox://styles/andrewboeddeker/ck5fivorr10ke1iqvhytv103v', // stylesheet location
+        center: [-94.6859, 46.7296], // starting position [lng, lat]
+        zoom: 10 // starting zoom
+    });
+
+    // Add zoom and rotation controls to the map.
+	map.addControl(new mapboxgl.NavigationControl(), 'top-left');
+
+	// Add a scale bar
+	map.addControl(new mapboxgl.ScaleControl({position: 'bottom-right', unit: 'imperial'}));
+
+    map.on('load', function() {
+    	map.addSource('mn_streams-9e5mn8', {
+        'type': 'vector',
+        'url': 'mapbox://andrewboeddeker.8s502pvg'
+    	});   
+    
+	    map.addLayer({
+			"id": "mn-streams",
+			"type": "line",
+			"source": "mn_streams-9e5mn8",
+			"source-layer": "mn_streams-9e5mn8",
+		   'layout': {
+				'visibility': 'visible'
+			},
+			paint: {
+				'line-color': 'blue',
+				'line-width': 1,			
+			}
+		});
+
+		map.addSource('troutspotr_streams-7bsh92', {
+        'type': 'vector',
+        'url': 'mapbox://andrewboeddeker.9hy0dgfi'
+    	});   
+    
+	    map.addLayer({
+			"id": "spotr-streams",
+			"type": "line",
+			"source": "troutspotr_streams-7bsh92",
+			"source-layer": "troutspotr_streams-7bsh92",
+		   'layout': {
+				'visibility': 'visible'
+			},
+			paint: {
+				'line-color': 'orange',
+				'line-width': 1.5,			
+			}
+		});
+
+		map.addSource('public_streams-0w4ewl', {
+		    "type": "vector",
+		    "url": 'mapbox://andrewboeddeker.akqk21xz'
+		  });
+
+	    map.addLayer({
+	        id: "publicaccess",
+	        type: "circle",
+	        source: "public_streams-0w4ewl",
+	        "source-layer": "public_streams-0w4ewl",
+	        "minzoom": 5, 
+	        paint: {
+		        "circle-color": "gray",
+		        "circle-radius": 8,
+		        "circle-stroke-width": 1,
+		        "circle-stroke-color": "#fff"
+	        }
+	     });  	    
+    });
+
+    map.on('click', 'publicaccess', function (e) {
+    var feature = e.features[0]; //get the properties of the clicked feature
+    console.log(feature);       
+    new mapboxgl.Popup()
+        .setLngLat(feature.geometry.coordinates)          
+        .setHTML('<b> Is over trout stream: ' + feature.properties.is_over_trout_stream + '</b> <b><br> Street Name: </b>' + feature.properties.street_name + '<br><b>Distance to Previous Neighbor: </b>' + feature.properties.distance_to_previous_neighbor)                   
+        .addTo(map); // Add the popup to the map        
+	});
+
+	map.on('click', 'spotr-streams', function (e) {
+    var feature = e.features[0]; //get the properties of the clicked feature
+    console.log(feature);       
+    new mapboxgl.Popup()
+        .setLngLat(e.lngLat)          
+        .setHTML('<b> Name: ' + feature.properties.name + '</b> <b><br> Brown Trout: </b>' + feature.properties.has_brown_trout + '<br><b>Rainbow Trout: </b>' + feature.properties.has_rainbow_trout)                   
+        .addTo(map); // Add the popup to the map        
+	});
+
+</script>
+
+</body>
+</html>
